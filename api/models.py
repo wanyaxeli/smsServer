@@ -32,7 +32,9 @@ class Classes(models.Model):
         return self.name
 class FeeSystems(models.Model):
     classFee=models.IntegerField(default=0)
-    term=models.IntegerField(default=0)
+    term_one=models.IntegerField(default=0)
+    term_two=models.IntegerField(default=0)
+    term_three=models.IntegerField(default=0)
     totalAmount=models.IntegerField(default=0)
     def __str__(self) -> str:
         return self.classFee

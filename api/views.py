@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import StudentRegistration,TeacherRegistration
-from .serializers import StudentSerializer,TeacherSerializer
+from .models import StudentRegistration,TeacherRegistration,FeeSystems
+from .serializers import StudentSerializer,TeacherSerializer,FeeSystemSerializer
 # Create your views here.
 class StudentsView(APIView):
     def post(self,request):
@@ -40,7 +40,7 @@ class TeacherView(APIView):
         email=data['email']
         gender=data['gender']
         date_of_application=['date_of_appointment']
-        subjects=data[' subjects']
+        subjects=data['subjects']
         phone_number=data['phone_number']
         print('teacher1',data)
         if TeacherRegistration.objects.filter(identity=identity).exists:
@@ -48,4 +48,19 @@ class TeacherView(APIView):
         else:
             teacher=TeacherRegistration.objects.create(employeeNo=employeeNo,first_name=first_name,last_name=last_name,
             email=email,gender=gender,date_of_application=date_of_application,subjects=subjects,phone_number=phone_number)
-            return Response('teacher')
+            teacher.save()
+            return Response('teacher added successfully')
+    def get(self,request):
+        teachers=TeacherRegistration.objects.all()
+        serializer=TeacherSerializer(teachers,many=True)
+        return Response(serializer.data)
+class FeeSystemView(APIView):
+    def post(self,request):
+        data=request.data
+        serializer=FeeSystemSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response('fee system created successfully')
+        else:
+            print('fee',data)
+            return Response(serializer.errors)
