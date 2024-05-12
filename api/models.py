@@ -11,12 +11,14 @@ class StudentRegistration(models.Model):
     regNo=models.CharField(max_length=255,default='')
     first_name=models.CharField(max_length=255,default='')
     middle_name=models.CharField(max_length=255,default='',null=True,blank=True)
-    last_name=models.CharField(max_length=255,default='')
+    last_name=models.CharField(max_length=255,default='',null=True,blank=True)
     dob=models.DateField(default=datetime.now)
     Student_class=models.IntegerField(default=0)
     stream=models.CharField(max_length=255,null=True)
     parent_first_name=models.CharField(max_length=255,null=True)
     parent_last_name=models.CharField(max_length=255,null=True)
+    parent_phone_number=models.IntegerField(default=0,null=True)
+    
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
 class Subjects(models.Model):
@@ -50,6 +52,7 @@ class TeacherRegistration(models.Model):
     gender=models.CharField(max_length=255,null=True)
     date_of_application=models.DateField(default=datetime.now)
     phone_number=models.IntegerField(default=0)
+    subjects=models.CharField(max_length=500,default='')
     # Subject=models.IntegerField(default=0)
 
     def __str__(self) -> str:
