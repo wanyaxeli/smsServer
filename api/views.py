@@ -1,13 +1,12 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import StudentRegistration,TeacherRegistration,FeeSystems
-from .serializers import StudentSerializer,TeacherSerializer,FeeSystemSerializer
+from .models import Classes,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
+from .serializers import WorkerSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
 # Create your views here.
 class StudentsView(APIView):
     def post(self,request):
         data=request.data
-        print('hello4',data)
         regNo=data['regNo']
         first_name=data['first_name']
         middle_name=data['middle_name']
@@ -33,21 +32,21 @@ class StudentsView(APIView):
 class TeacherView(APIView):
     def post(self,request):
         data=request.data
+        print('data',data)
         employeeNo=data['teacher_no']
         first_name=data['first_name']
         last_name=data['last_name']
         identity=data['id']
         email=data['email']
         gender=data['gender']
-        date_of_application=['date_of_appointment']
+        date_of_application=data['date_of_appointment']
         subjects=data['subjects']
         phone_number=data['phone_number']
-        print('teacher1',data)
-        if TeacherRegistration.objects.filter(identity=identity).exists:
+        print('teacher1',date_of_application)
+        if TeacherRegistration.objects.filter(employeeNo=employeeNo,identity=identity).exists():
             return Response('teacher already exists')
         else:
-            teacher=TeacherRegistration.objects.create(employeeNo=employeeNo,first_name=first_name,last_name=last_name,
-            email=email,gender=gender,date_of_application=date_of_application,subjects=subjects,phone_number=phone_number)
+            teacher=TeacherRegistration.objects.create(employeeNo=employeeNo,first_name=first_name,last_name=last_name,email=email,identity=identity,gender=gender,date_of_application=date_of_application,subjects=subjects,phone_number=phone_number)
             teacher.save()
             return Response('teacher added successfully')
     def get(self,request):
@@ -72,4 +71,85 @@ class FeeSystemView(APIView):
     def get(self,request):
         feeSystem=FeeSystems.objects.all()
         serializer=FeeSystemSerializer(feeSystem,many=True)
+        return Response(serializer.data)
+
+class FeePaymentView(APIView):
+    def post(self,request):
+        data=request.data
+        regNo=data['regNo']
+        term=data['term']
+        amount=data['amount']
+        teller=data['teller']
+        date=data['date']
+        try:
+            student=StudentRegistration.objects.get( regNo=regNo)
+            feePayment=FeePayment.objects.create(student=student,term=term,teller=teller,date=date,amount=amount)
+            feePayment.save()
+            return Response(f'fee payment of {student.first_name} {student.first_name} recorded successfully')
+        except StudentRegistration.DoesNotExist:
+            return Response('student does not exist')
+    def get(self,request):
+        feepaymemt=FeePayment.objects.all()
+        serializer=FeePaymentSerializer(feepaymemt,many=True)
+        return Response(serializer.data)
+
+class StudentFeeBalanceView(APIView):
+    def get(self,request):
+        feeBalance=StudentFeeBalance.objects.all()
+        serializer=StudentFeeBalanceSerializer(feeBalance,many=True)
+        return Response(serializer.data)
+
+class SubjectsView(APIView):
+    def post(self,request):
+        data=request.data['name']
+        print(data)
+        if Subjects.objects.filter(name=data).exists():
+            return Response('subject already exists')
+        else :
+            subject=Subjects.objects.create(name=data)
+            subject.save()
+            return Response('subject saved')
+    def get(self,request):
+        subjects=Subjects.objects.all()
+        serializer=SubjectsSerializer(subjects,many=True)
+        return Response(serializer.data)
+
+class ClassView(APIView):
+    def post(self,request):
+        data=request.data
+        print('class',data)
+        name=data['name']
+        stream=data['stream']
+        if Classes.objects.filter(name=name,stream=stream).exists():
+            return Response('class exists')
+        else:
+            classes=Classes.objects.create(name=name,stream=stream)
+            classes.save()
+            return Response('class created successfully')
+    def get(self,request):
+        classes=Classes.objects.all()
+        serializer=ClassSerializer(classes,many=True)
+        return Response(serializer.data)
+
+class WorkersView(APIView):
+    def post(self,request):
+        data=request.data
+        print('data',data)
+        first_name=data['first_name']
+        last_name=data['last_name']
+        identity=data['id']
+        email=data['email']
+        gender=data['gender']
+        date_of_application=data['date_of_appointment']
+        phone_number=data['phone_number']
+        print('teacher1',date_of_application)
+        if WorkersRegistration.objects.filter(identity=identity).exists():
+            return Response('worker already exists')
+        else:
+            worker=WorkersRegistration.objects.create(first_name=first_name,last_name=last_name,email=email,identity=identity,gender=gender,date_of_application=date_of_application,phone_number=phone_number)
+            worker.save()
+            return Response('worker added successfully')
+    def get(self,request):
+        workers=TeacherRegistration.objects.all()
+        serializer=WorkerSerializer(workers,many=True)
         return Response(serializer.data)
