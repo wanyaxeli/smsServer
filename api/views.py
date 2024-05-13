@@ -57,10 +57,19 @@ class TeacherView(APIView):
 class FeeSystemView(APIView):
     def post(self,request):
         data=request.data
-        serializer=FeeSystemSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response('fee system created successfully')
+        classFee=int(data['classFee'])
+        term_one=int(data['term_one'])
+        term_two=int(data['term_two'])
+        term_three=int(data['term_three'])
+        totalAmount=int(data['totalAmount'])
+        print('fee',data)
+        if FeeSystems.objects.filter(classFee=classFee).exists():
+            return Response('class fee exists')
         else:
-            print('fee',data)
-            return Response(serializer.errors)
+            fee=FeeSystems.objects.create(classFee=classFee,term_one=term_one,term_two=term_two,term_three=term_three,totalAmount=totalAmount)
+            fee.save()
+            return Response('fee system created successfully')
+    def get(self,request):
+        feeSystem=FeeSystems.objects.all()
+        serializer=FeeSystemSerializer(feeSystem,many=True)
+        return Response(serializer.data)

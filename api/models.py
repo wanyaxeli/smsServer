@@ -37,7 +37,7 @@ class FeeSystems(models.Model):
     term_three=models.IntegerField(default=0)
     totalAmount=models.IntegerField(default=0)
     def __str__(self) -> str:
-        return self.classFee
+        return f'class {self.classFee}'
 class FeePayment(models.Model):
     student=models.ForeignKey(StudentRegistration,on_delete=models.CASCADE)
     term=models.IntegerField(default=1)
@@ -54,7 +54,7 @@ class TeacherRegistration(models.Model):
     gender=models.CharField(max_length=255,null=True)
     date_of_application=models.DateField(default=datetime.now)
     phone_number=models.IntegerField(default=0)
-    subjects=models.CharField(max_length=500,default='')
+    subjects=models.CharField(max_length=255,default='')
     # Subject=models.IntegerField(default=0)
 
     def __str__(self) -> str:
@@ -74,3 +74,6 @@ class Results(models.Model):
     student=models.ForeignKey(StudentRegistration,on_delete=models.CASCADE)
     subject=models.CharField(max_length=255)
     marks=models.IntegerField(default=0)
+class StudentFeeBalance(models.Model):
+    student=models.ForeignKey(StudentRegistration,on_delete=models.CASCADE)
+    amount=models.IntegerField(default='')

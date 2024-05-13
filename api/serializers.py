@@ -11,5 +11,5 @@ class TeacherSerializer(serializers.ModelSerializer):
         fields='__all__'
 class FeeSystemSerializer(serializers.ModelSerializer):
     class Meta:
-        model=TeacherRegistration
+        model=FeeSystems
         fields='__all__'
