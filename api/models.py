@@ -79,4 +79,5 @@ class Results(models.Model):
     marks=models.IntegerField(default=0)
 class StudentFeeBalance(models.Model):
     student=models.ForeignKey(StudentRegistration,on_delete=models.CASCADE)
-    amount=models.IntegerField(default='')
+    balance=models.IntegerField(default='')
+    amountPaid=models.IntegerField(default='')

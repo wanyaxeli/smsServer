@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Classes,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
 from .serializers import WorkerSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
+from django.db.models import Count
 # Create your views here.
 class StudentsView(APIView):
     def post(self,request):
@@ -153,3 +154,13 @@ class WorkersView(APIView):
         workers=TeacherRegistration.objects.all()
         serializer=WorkerSerializer(workers,many=True)
         return Response(serializer.data)
+class SpecificFeePayment(APIView):
+    def get(self,request,*args,**kwargs):
+        pk=self.kwargs['pk']
+        try:
+            student=StudentRegistration.objects.get(pk=pk)
+            feePayment=FeePayment.objects.get(student=student)
+            serializer=FeePaymentSerializer(feePayment)
+            return Response(serializer.data)
+        except StudentRegistration.DoesNotExist:
+            return Response('student does not exist')
