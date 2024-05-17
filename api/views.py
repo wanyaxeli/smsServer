@@ -164,3 +164,13 @@ class SpecificFeePayment(APIView):
             return Response(serializer.data)
         except StudentRegistration.DoesNotExist:
             return Response('student does not exist')
+class StudentSearch(APIView):
+    def post(self,request):
+        data=request.data['regNo']
+        print(data)
+        try:
+            student=StudentRegistration.objects.get(regNo=data)
+            serializer=StudentSerializer(student)
+            return Response(serializer.data)
+        except StudentRegistration.DoesNotExist:
+            return Response('student does not exist')
