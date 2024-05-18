@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Classes,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
-from .serializers import WorkerSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
+from .models import Classes,Results,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
+from .serializers import WorkerSerializer,ResultsSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
 from django.db.models import Count
 # Create your views here.
 class StudentsView(APIView):
@@ -141,17 +141,18 @@ class WorkersView(APIView):
         identity=data['id']
         email=data['email']
         gender=data['gender']
+        employee_earning=data['employee_earning']
         date_of_application=data['date_of_appointment']
         phone_number=data['phone_number']
         print('teacher1',date_of_application)
         if WorkersRegistration.objects.filter(identity=identity).exists():
             return Response('worker already exists')
         else:
-            worker=WorkersRegistration.objects.create(first_name=first_name,last_name=last_name,email=email,identity=identity,gender=gender,date_of_application=date_of_application,phone_number=phone_number)
+            worker=WorkersRegistration.objects.create(first_name=first_name,last_name=last_name,email=email,identity=identity,gender=gender,date_of_application=date_of_application,employee_earning=employee_earning,phone_number=phone_number)
             worker.save()
             return Response('worker added successfully')
     def get(self,request):
-        workers=TeacherRegistration.objects.all()
+        workers=WorkersRegistration.objects.all()
         serializer=WorkerSerializer(workers,many=True)
         return Response(serializer.data)
 class SpecificFeePayment(APIView):
@@ -174,3 +175,59 @@ class StudentSearch(APIView):
             return Response(serializer.data)
         except StudentRegistration.DoesNotExist:
             return Response('student does not exist')
+
+
+class ResultsVeiw(APIView):
+    def post(self,request):
+        data=request.data['values']
+        regNo=data['regNo']
+        subject=data['subject']
+        marks=data['marks']
+        try:
+            student = StudentRegistration.objects.get(regNo=regNo)
+        except StudentRegistration.DoesNotExist:
+            return Response({'error': 'Student not found'})
+
+        try:
+            subject = Subjects.objects.get(name=subject)
+        except Subjects.DoesNotExist:
+            return Response({'error': 'Subject not found'})
+
+        results, created = Results.objects.update_or_create(
+            student=student,
+            subject=subject,
+            marks= marks
+        )
+
+        if created:
+            message = 'Results recorded successfully'
+        else:
+            message = 'Results updated successfully'
+
+        return Response({'message': message})
+    def get(self,request):
+        students = StudentRegistration.objects.filter(results__isnull=False).distinct()
+        all_students_data = []
+
+        for student in students:
+            results = Results.objects.filter(student=student).select_related('subject')
+            if results.exists():
+                results_data = [
+                    {
+                        'subject': result.subject.name,
+                        'marks': result.marks
+                    }
+                    for result in results
+                ]
+
+                student_data = {
+                    'id': student.id,
+                    'regNo': student.regNo,
+                    'first_name': student.first_name,
+                    'last_name': student.last_name,
+                    'Student_class': student.Student_class,
+                    'results': results_data
+                }
+                all_students_data.append(student_data)
+
+        return Response(all_students_data)

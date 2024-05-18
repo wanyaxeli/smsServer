@@ -1,4 +1,4 @@
-from .models import Classes,WorkersRegistration,StudentRegistration,Subjects,StudentFeeBalance,FeePayment,TeacherRegistration,FeeSystems
+from .models import Classes,Results,WorkersRegistration,StudentRegistration,Subjects,StudentFeeBalance,FeePayment,TeacherRegistration,FeeSystems
 from rest_framework import serializers
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,4 +39,10 @@ class ClassSerializer(serializers.ModelSerializer):
 class WorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model=WorkersRegistration
+        fields='__all__'
+
+class ResultsSerializer(serializers.ModelSerializer):
+    student=StudentDetailsSerializer()
+    class Meta:
+        model=Results
         fields='__all__'

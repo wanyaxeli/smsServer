@@ -70,13 +70,18 @@ class WorkersRegistration(models.Model):
     email=models.EmailField(max_length=255,null=True)
     work=models.CharField(max_length=255,null=True)
     gender=models.CharField(max_length=255,null=True)
+    employee_earning=models.IntegerField(default=0)
     date_of_application=models.DateField(default=datetime.now)
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
 class Results(models.Model):
     student=models.ForeignKey(StudentRegistration,on_delete=models.CASCADE)
-    subject=models.CharField(max_length=255)
+    subject=models.ForeignKey(Subjects,on_delete=models.CASCADE,default='')
     marks=models.IntegerField(default=0)
+    class Meta:
+        unique_together = ('student', 'subject')
+    def __str__(self):
+        return f"{self.student.first_name}  {self.subject.name} - {self.marks}"
 class StudentFeeBalance(models.Model):
     student=models.ForeignKey(StudentRegistration,on_delete=models.CASCADE)
     balance=models.IntegerField(default='')
