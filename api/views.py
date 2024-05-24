@@ -1,10 +1,46 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Classes,Results,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
-from .serializers import WorkerSerializer,ResultsSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
+from .models import Classes,Results,User,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
+from .serializers import MyTokenObtainPairSerializer,WorkerSerializer,UserSerializer,ResultsSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
 from django.db.models import Count
+from rest_framework_simplejwt.views import TokenObtainPairView
 # Create your views here.
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class=MyTokenObtainPairSerializer
+class UserView(APIView):
+    def post(self, request):
+        data = request.data['data']
+        first_name = data['first_name']
+        email = data['email']
+        last_name = data['last_name']
+        phone_number = data['phone_number']
+        password = data['password']
+        confirm_password = data['confirm_password']
+
+        if password != confirm_password:
+            print('asdas',password)
+            return Response({'error': 'Passwords do not match'})
+    
+        if User.objects.filter(first_name=first_name, last_name=last_name).exists():
+            return Response({'error': 'Account already exists'})
+        else:
+           
+            serializer = UserSerializer(data={
+                'first_name': first_name,
+                'email': email,
+                'last_name': last_name,
+                'phone_number': phone_number,
+                'password': password,
+                'confirm_password': confirm_password
+            })
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'success': 'Account created successfully'})
+            else:
+                return Response(serializer.errors)
+    
 class StudentsView(APIView):
     def post(self,request):
         data=request.data
@@ -33,7 +69,6 @@ class StudentsView(APIView):
 class TeacherView(APIView):
     def post(self,request):
         data=request.data
-        print('data',data)
         employeeNo=data['teacher_no']
         first_name=data['first_name']
         last_name=data['last_name']
@@ -43,7 +78,6 @@ class TeacherView(APIView):
         date_of_application=data['date_of_appointment']
         subjects=data['subjects']
         phone_number=data['phone_number']
-        print('teacher1',date_of_application)
         if TeacherRegistration.objects.filter(employeeNo=employeeNo,identity=identity).exists():
             return Response('teacher already exists')
         else:

@@ -1,5 +1,47 @@
-from .models import Classes,Results,WorkersRegistration,StudentRegistration,Subjects,StudentFeeBalance,FeePayment,TeacherRegistration,FeeSystems
+from .models import Classes,User,Results,WorkersRegistration,StudentRegistration,Subjects,StudentFeeBalance,FeePayment,TeacherRegistration,FeeSystems
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import Group, Permission
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+class UserSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField(write_only=True)
+    class Meta:
+        model=User
+        fields=['first_name', 'email', 'last_name', 'phone_number', 'password', 'confirm_password']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
+    def validate(self, data):
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+
+        if password != confirm_password:
+            raise serializers.ValidationError("The passwords do not match.")
+        
+        return data
+
+    def create(self, validated_data):
+        validated_data.pop('confirm_password')  # Remove confirm_password since it is not a model field
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+    #     return data
+    # def validate_password(self, value):
+    #     return make_password(value)
+    
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
+        token['email'] = user.email
+        token['user_id'] = user.pk
+
+        return token
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model=StudentRegistration

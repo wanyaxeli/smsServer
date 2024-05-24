@@ -3,7 +3,10 @@ from datetime import datetime
 from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class User(AbstractUser):
+    USERNAME_FIELD = 'email'
     phone_number=models.IntegerField(default=0)
+    email = models.EmailField(unique=True) # changes email to unique and blank to false
+    REQUIRED_FIELDS = ['first_name','last_name'] # removes email from REQUIRED_FIELDS
     confirm_password=models.CharField(max_length=255,null=True)
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
