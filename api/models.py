@@ -1,13 +1,44 @@
 from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import BaseUserManager
+from django.conf import settings
 # Create your models here.
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        """
+        Create and return a regular user with an email and password.
+        """
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        """
+        Create and return a superuser with an email and password.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
 class User(AbstractUser):
     USERNAME_FIELD = 'email'
     phone_number=models.IntegerField(default=0)
     email = models.EmailField(unique=True) # changes email to unique and blank to false
     REQUIRED_FIELDS = ['first_name','last_name'] # removes email from REQUIRED_FIELDS
     confirm_password=models.CharField(max_length=255,null=True)
+    username = None  # Set username to None
+    objects = CustomUserManager() 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
 class StudentRegistration(models.Model):
@@ -89,3 +120,9 @@ class StudentFeeBalance(models.Model):
     student=models.ForeignKey(StudentRegistration,on_delete=models.CASCADE)
     balance=models.IntegerField(default='')
     amountPaid=models.IntegerField(default='')
+
+class Profile(models.Model):
+    user=models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user.first_name} {self.user.last_name}'

@@ -1,4 +1,4 @@
-from .models import Classes,User,Results,WorkersRegistration,StudentRegistration,Subjects,StudentFeeBalance,FeePayment,TeacherRegistration,FeeSystems
+from .models import Classes,Profile,User,Results,WorkersRegistration,StudentRegistration,Subjects,StudentFeeBalance,FeePayment,TeacherRegistration,FeeSystems
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, Permission
@@ -46,7 +46,10 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model=StudentRegistration
         fields='__all__'
-
+class UserDetails(serializers.ModelSerializer):
+    class Meta:
+        model=User
+        fields=['first_name','last_name','email','phone_number']
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model=TeacherRegistration
@@ -64,7 +67,11 @@ class FeePaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model=FeePayment
         fields='__all__'
-
+class ProfileSerializer(serializers.ModelSerializer):
+    user=UserDetails()
+    class Meta:
+        model=Profile
+        fields='__all__'
 class StudentFeeBalanceSerializer(serializers.ModelSerializer):
     student=StudentDetailsSerializer()
     class Meta:

@@ -1,9 +1,16 @@
-from .models import StudentRegistration,FeePayment,FeeSystems,StudentFeeBalance
+from .models import User,Profile,StudentRegistration,FeePayment,FeeSystems,StudentFeeBalance
 from django.dispatch import receiver
 from rest_framework.response import Response
 from django.db.models.signals import post_save,m2m_changed
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
+
+@receiver(post_save,sender=User)
+def createProfile(sender,instance,created,**kwargs):
+    if created:
+        profile = Profile.objects.create(user=instance)
+        profile.save()
+
 @receiver(post_save,sender=StudentRegistration)
 def InitialstudentBalance(sender,instance,created,**kwargs):
     if created:

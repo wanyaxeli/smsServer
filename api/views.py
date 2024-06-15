@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Classes,Results,User,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
-from .serializers import MyTokenObtainPairSerializer,WorkerSerializer,UserSerializer,ResultsSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
+from .models import Classes,Results,Profile,User,WorkersRegistration,StudentFeeBalance,Subjects,StudentRegistration,TeacherRegistration,FeeSystems,FeePayment
+from .serializers import ProfileSerializer,MyTokenObtainPairSerializer,WorkerSerializer,UserSerializer,ResultsSerializer,ClassSerializer,SubjectsSerializer,StudentFeeBalanceSerializer,FeePaymentSerializer,StudentSerializer,TeacherSerializer,FeeSystemSerializer
 from django.db.models import Count
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import permissions
 # Create your views here.
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class=MyTokenObtainPairSerializer
@@ -24,6 +25,8 @@ class UserView(APIView):
     
         if User.objects.filter(first_name=first_name, last_name=last_name).exists():
             return Response({'error': 'Account already exists'})
+        elif User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already exists'})
         else:
            
             serializer = UserSerializer(data={
@@ -39,8 +42,26 @@ class UserView(APIView):
                 serializer.save()
                 return Response({'success': 'Account created successfully'})
             else:
-                return Response(serializer.errors)
-    
+                return Response({'error':serializer.errors})
+    def get(self,request):
+        user=User.objects.all()
+        serializer=UserSerializer(user,many=True)
+        return Response(serializer.data)
+    def delete(self,request):
+        user=User.objects.all()
+        user.delete()
+
+class ProfileView(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def get(self,request,*args,**kwargs):
+        user=request.user
+        try:
+            profile=Profile.objects.get(user=user)
+            serilizer=ProfileSerializer(profile)
+            return Response(serilizer.data)
+        except Profile.DoesNotExist:
+            return Response('profile not exist')
+ 
 class StudentsView(APIView):
     def post(self,request):
         data=request.data
